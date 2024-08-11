@@ -6,11 +6,11 @@ app.use(express.json());
 const livros = [
     {
         id: 1,
-        título: "O Senhor dos Anéis"
+        titulo: "O Senhor dos Anéis"
     },
     {
         id: 2,
-        título: "O Hobbit"
+        titulo: "O Hobbit"
     },
 ];
 
@@ -30,12 +30,30 @@ app.get("/livros", (req, res)=> {
 
 app.get("/livros/:id", (req, res) => {
     const index = buscaLivro(req.params.id);
-})
+    res.status(200).json(livros[index]);
+});
 
 app.post("/livros", (req, res) => {
     livros.push(req.body);
     res.status(201).send("Livro cadastrado com sucesso");
-})
+});
+
+
+app.put("/livros/:id", (req, res) => {
+    const index = buscaLivro(req.params.id);
+    livros[index].titulo = req.body.titulo;
+
+    const livro = livros[index];
+
+    res.status(200).json(livro);
+});
+
+app.delete('/livros/:id', (req, res) => {
+    const index = buscaLivro(req.params.id);
+    livros.splice(index, 1);
+    res.status(200).send('Livro removido com sucesso.');
+});
+
 
 
 export default app;
