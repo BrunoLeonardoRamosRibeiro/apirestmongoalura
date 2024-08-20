@@ -1,15 +1,33 @@
 /* eslint-disable no-unused-vars */
 import {autores, livros} from "../models/index.js";
+import RequisicaoIncorreta from "../erros/RequisisaoIncorreta.js";
 
 class LivroController {
 
   static listarLivros = async (req, res, next) => {
     try {
-      const livrosResultado = await livros.find()
-        .populate("autor")
-        .exec();
 
-      res.status(200).json(livrosResultado);
+      let { limite = 5, pagina = 1 } = req.query;
+
+      limite = parseInt(limite);
+      pagina = parseInt(pagina);
+
+      if (limite > 0 && pagina > 0){
+        const livrosResultado = await livros.find()
+          .skip((pagina - 1) * limite)
+          .limit(limite)
+          .populate("autor")
+          .exec();
+
+        res.status(200).json(livrosResultado);
+
+      } else {
+        next(new RequisicaoIncorreta());
+      }
+
+
+
+     
     } catch (erro) {
       next(erro);
     }
@@ -69,11 +87,15 @@ class LivroController {
     try {
       const busca = await processaBusca(req.query);
 
-      const livrosResultado = await livros
-        .find(busca)
-        .populate("autor");
+      if (busca !== null){
+        const livrosResultado = await livros
+          .find(busca)
+          .populate("autor");
 
-      res.status(200).send(livrosResultado);
+        res.status(200).send(livrosResultado);
+      } else {
+        res.status(200).send([]);
+      }
     } catch (erro) {
       next(erro);
     }
@@ -84,7 +106,7 @@ class LivroController {
 async function processaBusca(parametros) {
   const { editora, titulo, minPaginas, maxPaginas, nomeAutor } = parametros;
 
-  const busca = {};
+  let busca = {};
 
   if (editora){
     busca.editora = editora;
@@ -103,9 +125,12 @@ async function processaBusca(parametros) {
 
   if (nomeAutor){
     const autor = await autores.findOne({ nome: nomeAutor });
-    const  autorId = autor._id;
 
-    busca.autor = autorId;
+    if (autor !== null){
+      busca.autor = autor._id;
+    } else {
+      busca = null;
+    }
   }
 
   return busca;
