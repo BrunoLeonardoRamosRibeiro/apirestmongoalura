@@ -15,7 +15,7 @@ class AutorController {
     }
   };
 
-  static listarAutorPorId = async (req, res, next) => {
+  static listarAutorPorId = async (req, res, next) => { 
     try {
       const id = req.params.id;
 

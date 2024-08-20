@@ -21,11 +21,12 @@ class LivroController {
     try {
       const id = req.params.id;
 
-      const livroResultados = await livros.findById(id)
-        .populate("autor", "nome")
-        .exec();
+      const livroResultado = await livros
+        .findById(id, {}, { autopopulate: false })
+        .populate("autor");  // removemos o segundo parâmetro "nome", 
+        // e agora essa população mostra todas as informações do autor
 
-      res.status(200).send(livroResultados);
+      res.status(200).send(livroResultado);
     } catch (erro) {
       next(erro);
     }
@@ -72,9 +73,7 @@ class LivroController {
       const busca = await processaBusca(req.query);
 
       if (busca !== null){
-        const livrosResultado =  livros
-          .find(busca)
-          .populate("autor");
+        const livrosResultado =  livros.find(busca);
 
         req.resultado = livrosResultado;
 
